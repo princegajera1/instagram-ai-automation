@@ -7,6 +7,8 @@ import { SanitizationMiddleware } from './middlewares/sanitization.middleware';
 import { InstagramAuthModule } from './modules/instagram-auth/instagram-auth.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { InstagramPublishModule } from './modules/instagram-publish/instagram-publish.module';
+import { MediaUploadModule } from './modules/media-upload/media-upload.module';
+import { PostsModule } from './modules/posts/posts.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { InstagramPublishModule } from './modules/instagram-publish/instagram-pu
     InstagramAuthModule,
     JobsModule,
     InstagramPublishModule,
+    MediaUploadModule,
+    PostsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -117,6 +117,10 @@ model Post {
   instagramAccountId String
   instagramAccount   InstagramAccount @relation(fields: [instagramAccountId], references: [id], onDelete: Cascade)
   caption            String?
+  hashtags           String?
+  location           String?
+  firstComment       String?
+  timezone           String?          @default("UTC")
   type               PostType
   status             PostStatus       @default(DRAFT)
   scheduledAt        DateTime?
@@ -139,8 +143,8 @@ model Post {
 
 model MediaFile {
   id        String   @id @default(uuid())
-  postId    String
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
   url       String
   s3Key     String
   mimeType  String

@@ -1,0 +1,398 @@
+.page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0a0f 0%, #0d0b1e 50%, #0a0f1e 100%);
+  padding: 2rem;
+  color: #e2e8f0;
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+/* ─── Page Header ─── */
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+.title {
+  font-size: 1.9rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 0.25rem;
+}
+.subtitle {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin: 0;
+}
+.createBtn {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+  white-space: nowrap;
+}
+.createBtn:hover { opacity: 0.88; transform: translateY(-1px); }
+.createBtn:active { transform: translateY(0); }
+
+/* ─── Navigation ─── */
+.calNav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.navBtn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #94a3b8;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.navBtn:hover { background: rgba(139,92,246,0.15); color: #c4b5fd; }
+.monthTitle {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0;
+  min-width: 220px;
+  text-align: center;
+}
+.todayBtn {
+  background: rgba(139,92,246,0.12);
+  border: 1px solid rgba(139,92,246,0.3);
+  color: #c4b5fd;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.todayBtn:hover { background: rgba(139,92,246,0.22); }
+
+/* ─── Main Layout ─── */
+.mainLayout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 2rem;
+}
+
+/* ─── Calendar ─── */
+.calendarSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.dayNames {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+}
+.dayName {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.4rem 0;
+}
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+}
+.spinner {
+  width: 42px;
+  height: 42px;
+  border: 4px solid rgba(139,92,246,0.2);
+  border-top-color: #8b5cf6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.cell {
+  min-height: 90px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.18s;
+  position: relative;
+}
+.cell:hover { background: rgba(139,92,246,0.08); border-color: rgba(139,92,246,0.25); }
+.cellEmpty {
+  background: transparent;
+  border-color: transparent;
+  cursor: default;
+  pointer-events: none;
+}
+.cellToday {
+  background: rgba(139,92,246,0.1);
+  border-color: rgba(139,92,246,0.4);
+}
+.cellToday .dayNum {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: white;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cellSelected {
+  background: rgba(139,92,246,0.15);
+  border-color: rgba(139,92,246,0.55);
+}
+
+.dayNum {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  display: block;
+  width: 26px;
+  height: 26px;
+  line-height: 26px;
+  text-align: center;
+}
+
+.postDots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 4px;
+}
+.postDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.moreCount {
+  font-size: 0.65rem;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+/* ─── Legend ─── */
+.legend {
+  display: flex;
+  gap: 1.2rem;
+  padding-top: 0.8rem;
+  flex-wrap: wrap;
+}
+.legendItem { display: flex; align-items: center; gap: 0.4rem; }
+.legendDot { width: 10px; height: 10px; border-radius: 50%; }
+.legendLabel { font-size: 0.78rem; color: #6b7280; font-weight: 500; }
+
+/* ─── Side Panel ─── */
+.sidePanel {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 1.5rem;
+  min-height: 400px;
+  overflow-y: auto;
+}
+
+.sidePanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.sidePanelTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #c4b5fd;
+  margin: 0;
+}
+.addPostBtn {
+  background: rgba(139,92,246,0.15);
+  border: 1px solid rgba(139,92,246,0.35);
+  color: #a78bfa;
+  padding: 0.35rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.addPostBtn:hover { background: rgba(139,92,246,0.28); }
+
+.emptyDay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding-top: 3rem;
+  color: #4b5563;
+  text-align: center;
+}
+.emptyDayIcon { font-size: 2.5rem; }
+.createPostLink {
+  background: none;
+  border: 1px solid rgba(139,92,246,0.35);
+  color: #8b5cf6;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  margin-top: 0.4rem;
+}
+.createPostLink:hover { background: rgba(139,92,246,0.1); }
+
+.postList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.postCard {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.postCard:hover { background: rgba(139,92,246,0.07); border-color: rgba(139,92,246,0.2); }
+.postCardActive { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.4); }
+
+.postCardTop {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+.postThumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.06);
+}
+.thumbImg { width: 100%; height: 100%; object-fit: cover; }
+.thumbPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+.postMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1;
+  min-width: 0;
+}
+.postStatus {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 5px;
+  border: 1px solid;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  width: fit-content;
+}
+.postType { font-size: 0.78rem; color: #6b7280; }
+.postTime { font-size: 0.78rem; color: #6b7280; }
+.postCaption {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin: 0.5rem 0 0;
+  line-height: 1.4;
+}
+.postActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+.actionEdit, .actionDuplicate, .actionDelete {
+  flex: 1;
+  min-width: 70px;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid;
+}
+.actionEdit {
+  background: rgba(99,102,241,0.12);
+  border-color: rgba(99,102,241,0.3);
+  color: #818cf8;
+}
+.actionEdit:hover { background: rgba(99,102,241,0.22); }
+.actionDuplicate {
+  background: rgba(16,185,129,0.08);
+  border-color: rgba(16,185,129,0.25);
+  color: #34d399;
+}
+.actionDuplicate:hover { background: rgba(16,185,129,0.18); }
+.actionDelete {
+  background: rgba(239,68,68,0.08);
+  border-color: rgba(239,68,68,0.25);
+  color: #f87171;
+}
+.actionDelete:hover { background: rgba(239,68,68,0.18); }
+
+/* ─── Side Panel Placeholder ─── */
+.sidePanelPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 300px;
+  gap: 0.8rem;
+  text-align: center;
+  color: #4b5563;
+}
+.placeholderIcon { font-size: 3rem; }
+.placeholderText { font-size: 0.9rem; color: #6b7280; }
+
+@media (max-width: 1000px) {
+  .mainLayout { grid-template-columns: 1fr; }
+  .sidePanel { min-height: auto; }
+}
+@media (max-width: 640px) {
+  .cell { min-height: 60px; }
+  .calNav { flex-wrap: wrap; }
+  .monthTitle { min-width: 160px; }
+}
