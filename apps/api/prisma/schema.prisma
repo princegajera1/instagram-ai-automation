@@ -46,6 +46,12 @@ enum NotificationType {
   BILLING
 }
 
+enum AccountStatus {
+  ACTIVE
+  TOKEN_EXPIRED
+  SUSPENDED
+}
+
 model User {
   id                 String             @id // Clerk user ID (e.g., user_...)
   email              String             @unique
@@ -77,6 +83,7 @@ model ConnectedAccount {
   refreshToken      String?           // Encrypted
   expiresAt         DateTime?
   scopes            String?
+  status            AccountStatus     @default(ACTIVE)
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
   instagramAccount  InstagramAccount?
@@ -94,6 +101,7 @@ model InstagramAccount {
   profilePictureUrl  String?
   followersCount     Int              @default(0)
   isActive           Boolean          @default(true)
+  facebookPageId     String?
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
   posts              Post[]
@@ -114,6 +122,7 @@ model Post {
   scheduledAt        DateTime?
   publishedAt        DateTime?
   failureReason      String?
+  instagramMediaId   String?
   isDeleted          Boolean          @default(false)
   deletedAt          DateTime?
   createdAt          DateTime         @default(now())

@@ -32,12 +32,15 @@ export class ClerkAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers.authorization;
+    let token = '';
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Authorization header is missing or invalid');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    } else if (request.query && request.query.token) {
+      token = request.query.token as string;
+    } else {
+      throw new UnauthorizedException('Authorization session token is missing');
     }
-
-    const token = authHeader.split(' ')[1];
 
     try {
       const decoded = jwt.decode(token, { complete: true }) as any;

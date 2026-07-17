@@ -4,6 +4,9 @@ import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SanitizationMiddleware } from './middlewares/sanitization.middleware';
+import { InstagramAuthModule } from './modules/instagram-auth/instagram-auth.module';
+import { JobsModule } from './modules/jobs/jobs.module';
+import { InstagramPublishModule } from './modules/instagram-publish/instagram-publish.module';
 
 @Module({
   imports: [
@@ -13,6 +16,9 @@ import { SanitizationMiddleware } from './middlewares/sanitization.middleware';
         limit: 100, // 100 requests per minute
       },
     ]),
+    InstagramAuthModule,
+    JobsModule,
+    InstagramPublishModule,
   ],
   controllers: [AppController],
   providers: [
