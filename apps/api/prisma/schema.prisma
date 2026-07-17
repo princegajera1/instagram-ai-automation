@@ -1,0 +1,248 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  FAILED
+}
+
+enum PostType {
+  IMAGE
+  VIDEO
+  REEL
+  CAROUSEL
+  STORY
+}
+
+enum Platform {
+  INSTAGRAM
+  FACEBOOK
+  TIKTOK
+  YOUTUBE
+}
+
+enum AIRequestStatus {
+  SUCCESS
+  FAILED
+}
+
+enum NotificationType {
+  SYSTEM
+  POST_PUBLISHED
+  POST_FAILED
+  BILLING
+}
+
+model User {
+  id                 String             @id // Clerk user ID (e.g., user_...)
+  email              String             @unique
+  name               String?
+  role               Role               @default(USER)
+  stripeCustomerId   String?
+  subscriptionPlan   String?            @default("FREE")
+  subscriptionStatus String?            @default("ACTIVE")
+  isActive           Boolean            @default(true)
+  deletedAt          DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  connectedAccounts  ConnectedAccount[]
+  posts              Post[]
+  notifications      Notification[]
+  aiRequests         AIRequest[]
+  auditLogs          AuditLog[]
+
+  @@index([email])
+}
+
+model ConnectedAccount {
+  id                String            @id @default(uuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform          Platform          @default(INSTAGRAM)
+  platformAccountId String            // The user's account ID on that platform
+  accessToken       String            // Encrypted
+  refreshToken      String?           // Encrypted
+  expiresAt         DateTime?
+  scopes            String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  instagramAccount  InstagramAccount?
+
+  @@unique([platform, platformAccountId])
+  @@index([userId])
+}
+
+model InstagramAccount {
+  id                 String           @id @default(uuid())
+  connectedAccountId String           @unique
+  connectedAccount   ConnectedAccount @relation(fields: [connectedAccountId], references: [id], onDelete: Cascade)
+  username           String           @unique
+  displayName        String?
+  profilePictureUrl  String?
+  followersCount     Int              @default(0)
+  isActive           Boolean          @default(true)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  posts              Post[]
+  analytics          Analytics[]
+
+  @@index([username])
+}
+
+model Post {
+  id                 String           @id @default(uuid())
+  userId             String
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  instagramAccountId String
+  instagramAccount   InstagramAccount @relation(fields: [instagramAccountId], references: [id], onDelete: Cascade)
+  caption            String?
+  type               PostType
+  status             PostStatus       @default(DRAFT)
+  scheduledAt        DateTime?
+  publishedAt        DateTime?
+  failureReason      String?
+  isDeleted          Boolean          @default(false)
+  deletedAt          DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  mediaFiles         MediaFile[]
+  schedules          Schedule[]
+  analytics          Analytics[]
+
+  @@index([userId])
+  @@index([instagramAccountId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model MediaFile {
+  id        String   @id @default(uuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  url       String
+  s3Key     String
+  mimeType  String
+  sizeBytes Int
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([postId])
+}
+
+model Schedule {
+  id          String    @id @default(uuid())
+  postId      String
+  post        Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  runAt       DateTime
+  completedAt DateTime?
+  status      String    @default("PENDING")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([postId])
+  @@index([runAt])
+}
+
+model Analytics {
+  id                 String           @id @default(uuid())
+  instagramAccountId String
+  instagramAccount   InstagramAccount @relation(fields: [instagramAccountId], references: [id], onDelete: Cascade)
+  postId             String?
+  post               Post?            @relation(fields: [postId], references: [id], onDelete: Cascade)
+  likes              Int              @default(0)
+  comments           Int              @default(0)
+  shares             Int              @default(0)
+  impressions        Int              @default(0)
+  reach              Int              @default(0)
+  engagementRate     Float            @default(0.0)
+  recordedAt         DateTime         @default(now())
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@index([instagramAccountId])
+  @@index([postId])
+  @@index([recordedAt])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      NotificationType @default(SYSTEM)
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([isRead])
+}
+
+model Hashtag {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  tags      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Caption {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String?
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model AIRequest {
+  id           String          @id @default(uuid())
+  userId       String
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action       String
+  prompt       String
+  response     String?
+  status       AIRequestStatus
+  tokenCount   Int?
+  cost         Float?
+  errorMessage String?
+  createdAt    DateTime        @default(now())
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?
+  ipAddress String?
+  userAgent String?
+  metadata  String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
