@@ -39,28 +39,49 @@ export class ClerkAuthGuard implements CanActivate {
     } else if (request.query && request.query.token) {
       token = request.query.token as string;
     } else {
+      // In bypass mode, allow requests without auth for local dev testing
+      if (
+        process.env.NODE_ENV === 'development' &&
+        process.env.BYPASS_AUTH === 'true'
+      ) {
+        request.user = {
+          id: 'dev-user-bypass',
+          email: 'dev@localhost.dev',
+          role: 'USER',
+        };
+        return true;
+      }
       throw new UnauthorizedException('Authorization session token is missing');
     }
 
     try {
       const decoded = jwt.decode(token, { complete: true }) as any;
-      if (!decoded || !decoded.header || !decoded.header.kid) {
+      if (!decoded || !decoded.header) {
         throw new UnauthorizedException('Invalid token format');
       }
 
-      // If JWKS client is not configured (e.g. local dev testing without keys),
-      // we check if we allow local mock verification.
+      // ── Development bypass: skip JWKS verification entirely ──
+      // When BYPASS_AUTH=true, just decode the token without verifying signature.
+      // This allows local dev to work without a valid Clerk JWT.
+      if (
+        process.env.NODE_ENV === 'development' &&
+        process.env.BYPASS_AUTH === 'true'
+      ) {
+        request.user = {
+          id: decoded.payload?.sub || 'dev-user-bypass',
+          email: decoded.payload?.email || 'dev@localhost.dev',
+          role: decoded.payload?.metadata?.role || 'USER',
+        };
+        return true;
+      }
+
+      // ── Production path: full JWKS verification ──
       if (!this.client) {
-        if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
-          // Mock token payload for local testing
-          request.user = {
-            id: decoded.payload.sub || 'mock-user-id',
-            email: decoded.payload.email || 'mock@example.com',
-            role: decoded.payload.metadata?.role || 'USER',
-          };
-          return true;
-        }
         throw new UnauthorizedException('Authentication service not configured');
+      }
+
+      if (!decoded.header.kid) {
+        throw new UnauthorizedException('Token missing key identifier (kid)');
       }
 
       const key = await this.getSigningKey(decoded.header.kid);
@@ -71,11 +92,10 @@ export class ClerkAuthGuard implements CanActivate {
         algorithms: ['RS256'],
       }) as any;
 
-      // Extract details and attach to request context
       request.user = {
         id: verified.sub,
         email: verified.email,
-        role: verified.metadata?.role || 'USER', // role-based metadata from Clerk
+        role: verified.metadata?.role || 'USER',
         claims: verified,
       };
 

@@ -14,22 +14,31 @@ export class PostWarningSchedulerService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    // Remove any existing repeatable warning jobs
-    const existing = await this.warningQueue.getRepeatableJobs();
-    for (const job of existing) {
-      if (job.name === 'check-upcoming-posts') {
-        await this.warningQueue.removeRepeatableByKey(job.key);
+    // Wrap in try/catch so a missing Redis connection during local dev
+    // without Docker doesn't crash the entire NestJS bootstrap
+    try {
+      // Remove any existing repeatable warning jobs (idempotent restart)
+      const existing = await this.warningQueue.getRepeatableJobs();
+      for (const job of existing) {
+        if (job.name === 'check-upcoming-posts') {
+          await this.warningQueue.removeRepeatableByKey(job.key);
+        }
       }
+
+      // Run every 5 minutes
+      await this.warningQueue.add(
+        'check-upcoming-posts',
+        {},
+        { repeat: { pattern: '*/5 * * * *' } },
+      );
+
+      this.logger.log('Scheduled repeatable 5-minute upcoming post warning check');
+    } catch (err: any) {
+      this.logger.warn(
+        `PostWarningScheduler could not register jobs (Redis may be unavailable): ${err.message}. ` +
+          'Warning notifications will not fire until Redis is connected.',
+      );
     }
-
-    // Run every 5 minutes
-    await this.warningQueue.add(
-      'check-upcoming-posts',
-      {},
-      { repeat: { pattern: '*/5 * * * *' } },
-    );
-
-    this.logger.log('Scheduled repeatable 5-minute upcoming post warning check');
   }
 
   async checkAndNotify() {
@@ -45,7 +54,7 @@ export class PostWarningSchedulerService implements OnApplicationBootstrap {
     });
 
     for (const post of upcomingPosts) {
-      // Check if we already sent a warning for this post
+      // Idempotent: skip if notification already exists
       const existingNote = await this.prisma.notification.findFirst({
         where: {
           userId: post.userId,

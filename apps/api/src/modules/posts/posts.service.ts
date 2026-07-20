@@ -16,18 +16,25 @@ export class PostsService {
   ) {}
 
   private async schedulePublishJob(postId: string, scheduledAt: Date) {
-    const delay = Math.max(scheduledAt.getTime() - Date.now(), 0);
-    await this.publishQueue.add(
-      'publish-post',
-      { postId },
-      {
-        delay,
-        jobId: `post-${postId}`,
-        removeOnComplete: true,
-        removeOnFail: false,
-      },
-    );
-    this.logger.log(`Scheduled publish job for post ${postId} in ${Math.round(delay / 1000)}s`);
+    try {
+      const delay = Math.max(scheduledAt.getTime() - Date.now(), 0);
+      await this.publishQueue.add(
+        'publish-post',
+        { postId },
+        {
+          delay,
+          jobId: `post-${postId}`,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      );
+      this.logger.log(`Scheduled publish job for post ${postId} in ${Math.round(delay / 1000)}s`);
+    } catch (err: any) {
+      this.logger.warn(
+        `Could not queue publish job for post ${postId} (Redis may be unavailable): ${err.message}. ` +
+          'Post was saved to DB. Restart with Redis running to activate scheduling.',
+      );
+    }
   }
 
   private async removePublishJob(postId: string) {
@@ -49,6 +56,19 @@ export class PostsService {
 
     if (postStatus === PostStatus.SCHEDULED && !scheduledAt) {
       throw new BadRequestException('scheduledAt is required when status is SCHEDULED');
+    }
+
+    // Validate that the instagramAccountId exists and belongs to this user
+    const igAccount = await this.prisma.instagramAccount.findFirst({
+      where: {
+        id: rest.instagramAccountId,
+        connectedAccount: { userId },
+      },
+    });
+    if (!igAccount) {
+      throw new BadRequestException(
+        'Instagram account not found or does not belong to you. Connect an account in Settings first.',
+      );
     }
 
     const post = await this.prisma.post.create({

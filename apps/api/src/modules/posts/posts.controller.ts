@@ -16,6 +16,11 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostStatus } from '@prisma/client';
 
+/** Helper to extract userId from req.user regardless of field name */
+function getUserId(req: any): string {
+  return req.user?.id || req.user?.sub || req.user?.userId || 'anonymous';
+}
+
 @Controller('api/posts')
 @UseGuards(ClerkAuthGuard)
 export class PostsController {
@@ -23,8 +28,7 @@ export class PostsController {
 
   @Post()
   create(@Req() req: any, @Body() dto: CreatePostDto) {
-    const userId = req.user?.userId || req.user?.sub || 'anonymous';
-    return this.postsService.create(userId, dto);
+    return this.postsService.create(getUserId(req), dto);
   }
 
   @Get()
@@ -35,31 +39,26 @@ export class PostsController {
     @Query('endDate') endDate?: string,
     @Query('type') type?: string,
   ) {
-    const userId = req.user?.userId || req.user?.sub || 'anonymous';
-    return this.postsService.findAll(userId, { status, startDate, endDate, type });
+    return this.postsService.findAll(getUserId(req), { status, startDate, endDate, type });
   }
 
   @Get(':id')
   findOne(@Req() req: any, @Param('id') id: string) {
-    const userId = req.user?.userId || req.user?.sub || 'anonymous';
-    return this.postsService.findOne(userId, id);
+    return this.postsService.findOne(getUserId(req), id);
   }
 
   @Patch(':id')
   update(@Req() req: any, @Param('id') id: string, @Body() dto: UpdatePostDto) {
-    const userId = req.user?.userId || req.user?.sub || 'anonymous';
-    return this.postsService.update(userId, id, dto);
+    return this.postsService.update(getUserId(req), id, dto);
   }
 
   @Delete(':id')
   remove(@Req() req: any, @Param('id') id: string) {
-    const userId = req.user?.userId || req.user?.sub || 'anonymous';
-    return this.postsService.remove(userId, id);
+    return this.postsService.remove(getUserId(req), id);
   }
 
   @Post(':id/duplicate')
   duplicate(@Req() req: any, @Param('id') id: string) {
-    const userId = req.user?.userId || req.user?.sub || 'anonymous';
-    return this.postsService.duplicate(userId, id);
+    return this.postsService.duplicate(getUserId(req), id);
   }
 }

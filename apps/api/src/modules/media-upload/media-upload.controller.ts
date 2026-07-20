@@ -23,8 +23,8 @@ export class MediaUploadController {
     if (!file) {
       throw new BadRequestException('No file uploaded. Attach a file with field name "file".');
     }
-
-    const userId = req.user?.userId || req.user?.sub || 'anonymous';
+    // Normalize userId regardless of which field guard sets it on
+    const userId = req.user?.id || req.user?.sub || req.user?.userId || 'anonymous';
     return this.mediaUploadService.uploadFile(file, userId);
   }
 }

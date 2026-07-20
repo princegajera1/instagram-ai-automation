@@ -27,6 +27,8 @@ function SettingsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
   const [accounts, setAccounts] = useState<ConnectedAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -37,7 +39,7 @@ function SettingsContent() {
       const token = await getToken();
       if (!token) return;
 
-      const res = await fetch('http://localhost:4000/api/instagram/accounts', {
+      const res = await fetch(`${apiBase}/api/instagram/accounts`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -88,7 +90,7 @@ function SettingsContent() {
         setFeedback({ type: 'error', message: 'You must be logged in to connect accounts.' });
         return;
       }
-      window.location.href = `http://localhost:4000/api/instagram/connect?token=${token}`;
+      window.location.href = `${apiBase}/api/instagram/connect?token=${token}`;
     } catch (err: any) {
       setFeedback({ type: 'error', message: err.message || 'Failed to start authentication' });
       setActionLoading(null);
@@ -105,7 +107,7 @@ function SettingsContent() {
       const token = await getToken();
       if (!token) return;
 
-      const res = await fetch(`http://localhost:4000/api/instagram/disconnect/${accountId}`, {
+      const res = await fetch(`${apiBase}/api/instagram/disconnect/${accountId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
