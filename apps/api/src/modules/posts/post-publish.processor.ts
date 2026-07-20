@@ -15,7 +15,9 @@ export class PostPublishProcessor extends WorkerHost {
     this.logger.log(`Processing publish job for post ${job.data.postId}`);
     try {
       const mediaId = await this.publishService.publishPost(job.data.postId);
-      this.logger.log(`Post ${job.data.postId} published successfully! Instagram Media ID: ${mediaId}`);
+      this.logger.log(
+        `Post ${job.data.postId} published successfully! Instagram Media ID: ${mediaId}`,
+      );
       return { success: true, mediaId };
     } catch (err: any) {
       this.logger.error(`Failed to publish post ${job.data.postId}: ${err.message}`);

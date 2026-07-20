@@ -9,6 +9,9 @@ import styles from './create-post.module.css';
 const POST_TYPES = ['IMAGE', 'VIDEO', 'REEL', 'CAROUSEL', 'STORY'] as const;
 type PostType = (typeof POST_TYPES)[number];
 
+const TONES = ['Funny', 'Professional', 'Motivational', 'Business', 'Luxury', 'Short', 'Long'] as const;
+type Tone = (typeof TONES)[number];
+
 interface UploadedMedia {
   id: string;
   url: string;
@@ -21,6 +24,7 @@ export default function CreatePostPage() {
   const { getToken } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // ── Post state ──────────────────────────────────────────────────────────────
   const [type, setType] = useState<PostType>('IMAGE');
   const [caption, setCaption] = useState('');
   const [hashtags, setHashtags] = useState('');
@@ -35,11 +39,108 @@ export default function CreatePostPage() {
   const [saveError, setSaveError] = useState('');
   const [captionRows, setCaptionRows] = useState(4);
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+  // ── AI Panel state ──────────────────────────────────────────────────────────
+  const [aiTopic, setAiTopic] = useState('');
+  const [aiTone, setAiTone] = useState<Tone>('Professional');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
+  const [aiPanel, setAiPanel] = useState(true);
+  const [rewriteLoading, setRewriteLoading] = useState(false);
+  const [engagementScore, setEngagementScore] = useState<{
+    score: number;
+    reasoning: string;
+    tips: string[];
+    disclaimer: string;
+  } | null>(null);
+  const [scoringLoading, setScoringLoading] = useState(false);
 
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
   const charCount = caption.length;
   const charMax = 2200;
 
+  // ── AI Helper ───────────────────────────────────────────────────────────────
+  const aiPost = useCallback(
+    async (path: string, body: Record<string, unknown>) => {
+      const token = await getToken();
+      const res = await fetch(`${apiBase}/api/ai/${path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `AI request failed (${res.status})`);
+      }
+      return res.json();
+    },
+    [apiBase, getToken],
+  );
+
+  // ── Generate Caption + Hashtags ─────────────────────────────────────────────
+  const handleAiGenerate = async () => {
+    if (!aiTopic.trim()) {
+      setAiError('Please enter a topic or description before generating.');
+      return;
+    }
+    setAiError('');
+    setAiLoading(true);
+    setEngagementScore(null);
+    try {
+      const [captionRes, hashtagRes] = await Promise.all([
+        aiPost('caption/generate', { topic: aiTopic, tone: aiTone }),
+        aiPost('hashtags/generate', { captionOrTopic: aiTopic }),
+      ]);
+      setCaption(captionRes.caption || '');
+      const all = [
+        ...(hashtagRes.high || []),
+        ...(hashtagRes.medium || []),
+        ...(hashtagRes.low || []),
+      ].join(' ');
+      setHashtags(all);
+    } catch (err: any) {
+      setAiError(err.message || 'AI generation failed. Check your API key or try again.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  // ── Rewrite Caption ─────────────────────────────────────────────────────────
+  const handleRewrite = async () => {
+    if (!caption.trim()) {
+      setAiError('Write a caption first before rewriting.');
+      return;
+    }
+    setAiError('');
+    setRewriteLoading(true);
+    try {
+      const res = await aiPost('caption/rewrite', { caption, tone: aiTone });
+      setCaption(res.caption || caption);
+    } catch (err: any) {
+      setAiError(err.message || 'Rewrite failed. Please try again.');
+    } finally {
+      setRewriteLoading(false);
+    }
+  };
+
+  // ── Engagement Score ────────────────────────────────────────────────────────
+  const handleScoreEngagement = async () => {
+    if (!caption.trim()) {
+      setAiError('Add a caption before scoring engagement.');
+      return;
+    }
+    setAiError('');
+    setScoringLoading(true);
+    try {
+      const res = await aiPost('engagement-score', { caption, hashtags });
+      setEngagementScore(res);
+    } catch (err: any) {
+      setAiError(err.message || 'Engagement scoring failed.');
+    } finally {
+      setScoringLoading(false);
+    }
+  };
+
+  // ── Media Upload ────────────────────────────────────────────────────────────
   const uploadFile = useCallback(
     async (file: File) => {
       const token = await getToken();
@@ -92,6 +193,7 @@ export default function CreatePostPage() {
     setMediaFiles((prev) => prev.filter((m) => m.id !== id));
   };
 
+  // ── Save Post ───────────────────────────────────────────────────────────────
   const handleSave = async (status: 'DRAFT' | 'SCHEDULED') => {
     if (!instagramAccountId.trim()) {
       setSaveError('Please enter an Instagram Account ID.');
@@ -140,6 +242,15 @@ export default function CreatePostPage() {
     }
   };
 
+  const scoreColor =
+    engagementScore === null
+      ? '#6b7280'
+      : engagementScore.score >= 70
+      ? '#10b981'
+      : engagementScore.score >= 45
+      ? '#f59e0b'
+      : '#ef4444';
+
   return (
     <NavigationWrapper>
       <div className={styles.page}>
@@ -163,7 +274,7 @@ export default function CreatePostPage() {
               {mediaFiles.length === 0 && uploadingFiles.length === 0 ? (
                 <div className={styles.dropPlaceholder}>
                   <div className={styles.dropIcon}>📸</div>
-                  <p className={styles.dropText}>Drag & drop media here</p>
+                  <p className={styles.dropText}>Drag &amp; drop media here</p>
                   <p className={styles.dropSub}>JPG, PNG, MP4 • Max 8MB image / 100MB video</p>
                   <button className={styles.browseBtn} type="button">Browse files</button>
                 </div>
@@ -214,6 +325,62 @@ export default function CreatePostPage() {
                 </button>
               ))}
             </div>
+
+            {/* ── AI Generate Panel ── */}
+            <div className={styles.aiPanel}>
+              <button
+                className={styles.aiPanelToggle}
+                onClick={() => setAiPanel((v) => !v)}
+              >
+                <span>✨ AI Generate</span>
+                <span className={styles.aiToggleIcon}>{aiPanel ? '▲' : '▼'}</span>
+              </button>
+
+              {aiPanel && (
+                <div className={styles.aiPanelBody}>
+                  <div className={styles.aiField}>
+                    <label className={styles.aiLabel}>Topic / Description</label>
+                    <input
+                      className={styles.aiInput}
+                      placeholder="e.g. Coffee shop morning routine, mindfulness tips…"
+                      value={aiTopic}
+                      onChange={(e) => setAiTopic(e.target.value)}
+                    />
+                  </div>
+
+                  <div className={styles.aiField}>
+                    <label className={styles.aiLabel}>Tone</label>
+                    <div className={styles.toneGrid}>
+                      {TONES.map((t) => (
+                        <button
+                          key={t}
+                          className={`${styles.toneBtn} ${aiTone === t ? styles.toneBtnActive : ''}`}
+                          onClick={() => setAiTone(t)}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {aiError && (
+                    <div className={styles.aiError}>{aiError}</div>
+                  )}
+
+                  <button
+                    className={styles.aiGenerateBtn}
+                    onClick={handleAiGenerate}
+                    disabled={aiLoading}
+                  >
+                    {aiLoading ? (
+                      <span className={styles.aiSpinnerWrap}><span className={styles.aiSpinner} /> Generating…</span>
+                    ) : (
+                      '✨ Generate Caption & Hashtags'
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Right: Post Details */}
@@ -238,13 +405,35 @@ export default function CreatePostPage() {
               <textarea
                 className={styles.textarea}
                 rows={captionRows}
-                placeholder="Write a caption…"
+                placeholder="Write a caption… or use ✨ AI Generate"
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 onFocus={() => setCaptionRows(8)}
                 onBlur={() => setCaptionRows(4)}
                 maxLength={charMax}
               />
+              {/* Rewrite with AI row */}
+              <div className={styles.rewriteRow}>
+                <span className={styles.rewriteLabel}>Rewrite with AI:</span>
+                <div className={styles.toneGrid}>
+                  {TONES.map((t) => (
+                    <button
+                      key={t}
+                      className={`${styles.toneBtn} ${aiTone === t ? styles.toneBtnActive : ''}`}
+                      onClick={() => setAiTone(t)}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  className={styles.rewriteBtn}
+                  onClick={handleRewrite}
+                  disabled={rewriteLoading}
+                >
+                  {rewriteLoading ? '…' : '↺ Rewrite'}
+                </button>
+              </div>
             </div>
 
             <div className={styles.fieldGroup}>
@@ -280,13 +469,50 @@ export default function CreatePostPage() {
             </div>
 
             <div className={styles.fieldGroup}>
-              <label className={styles.label}>Schedule Date & Time</label>
+              <label className={styles.label}>Schedule Date &amp; Time</label>
               <input
                 className={styles.input}
                 type="datetime-local"
                 value={scheduledAt}
                 onChange={(e) => setScheduledAt(e.target.value)}
               />
+            </div>
+
+            {/* Engagement Score Card */}
+            <div className={styles.engagementSection}>
+              <button
+                className={styles.scoreBtn}
+                onClick={handleScoreEngagement}
+                disabled={scoringLoading || !caption.trim()}
+              >
+                {scoringLoading ? '…Analyzing' : '📊 Score Engagement (AI Estimate)'}
+              </button>
+
+              {engagementScore && (
+                <div className={styles.scoreCard}>
+                  <div className={styles.scoreHeader}>
+                    <span className={styles.scoreLabel}>AI Engagement Estimate</span>
+                    <span className={styles.scoreValue} style={{ color: scoreColor }}>
+                      {engagementScore.score}/100
+                    </span>
+                  </div>
+                  <div className={styles.scoreBar}>
+                    <div
+                      className={styles.scoreBarFill}
+                      style={{ width: `${engagementScore.score}%`, background: scoreColor }}
+                    />
+                  </div>
+                  <p className={styles.scoreReasoning}>{engagementScore.reasoning}</p>
+                  {engagementScore.tips.length > 0 && (
+                    <ul className={styles.scoreTips}>
+                      {engagementScore.tips.map((tip, i) => (
+                        <li key={i}>💡 {tip}</li>
+                      ))}
+                    </ul>
+                  )}
+                  <p className={styles.scoreDisclaimer}>{engagementScore.disclaimer}</p>
+                </div>
+              )}
             </div>
 
             {saveError && <p className={styles.saveError}>{saveError}</p>}

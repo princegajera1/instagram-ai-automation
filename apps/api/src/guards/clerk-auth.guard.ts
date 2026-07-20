@@ -40,10 +40,7 @@ export class ClerkAuthGuard implements CanActivate {
       token = request.query.token as string;
     } else {
       // In bypass mode, allow requests without auth for local dev testing
-      if (
-        process.env.NODE_ENV === 'development' &&
-        process.env.BYPASS_AUTH === 'true'
-      ) {
+      if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
         request.user = {
           id: 'dev-user-bypass',
           email: 'dev@localhost.dev',
@@ -63,10 +60,7 @@ export class ClerkAuthGuard implements CanActivate {
       // ── Development bypass: skip JWKS verification entirely ──
       // When BYPASS_AUTH=true, just decode the token without verifying signature.
       // This allows local dev to work without a valid Clerk JWT.
-      if (
-        process.env.NODE_ENV === 'development' &&
-        process.env.BYPASS_AUTH === 'true'
-      ) {
+      if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
         request.user = {
           id: decoded.payload?.sub || 'dev-user-bypass',
           email: decoded.payload?.email || 'dev@localhost.dev',

@@ -9,6 +9,7 @@ import { JobsModule } from './modules/jobs/jobs.module';
 import { InstagramPublishModule } from './modules/instagram-publish/instagram-publish.module';
 import { MediaUploadModule } from './modules/media-upload/media-upload.module';
 import { PostsModule } from './modules/posts/posts.module';
+import { AiContentModule } from './modules/ai-content/ai-content.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { PostsModule } from './modules/posts/posts.module';
     InstagramPublishModule,
     MediaUploadModule,
     PostsModule,
+    AiContentModule,
   ],
   controllers: [AppController],
   providers: [

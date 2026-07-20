@@ -27,6 +27,7 @@ export default function NavigationWrapper({ children }: NavigationWrapperProps) 
   const menuItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Create Post', href: '/create-post', icon: PlusCircle },
+    { name: 'AI Content Studio', href: '/ai-calendar', icon: Sparkles },
     { name: 'Calendar', href: '/calendar', icon: Calendar },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
     { name: 'Notifications', href: '/notifications', icon: Bell },
