@@ -3,33 +3,51 @@ import Link from 'next/link';
 export default function PricingPage() {
   const plans = [
     {
-      name: 'Free Plan',
+      name: 'Free',
       price: '$0',
-      description: 'Ideal for experimenting and personal accounts.',
-      features: ['1 connected Instagram account', '5 scheduled posts per month', 'Basic AI caption generator', 'Standard support'],
+      description: 'Perfect for testing and personal side projects.',
+      features: ['1 connected Instagram account', '5 scheduled posts per month', '10 AI caption generations/month', 'Standard support'],
       cta: 'Get Started Free',
       popular: false,
     },
     {
-      name: 'Pro Automation',
+      name: 'Starter',
+      price: '$9',
+      description: 'Great for casual creators stepping up their game.',
+      features: ['3 connected Instagram accounts', '30 scheduled posts per month', '50 AI caption generations/month', 'Priority calendar scheduling', 'Standard analytics tracking'],
+      cta: 'Upgrade to Starter',
+      popular: false,
+    },
+    {
+      name: 'Pro',
       price: '$29',
-      description: 'Perfect for content creators and growing brands.',
-      features: ['3 connected Instagram accounts', 'Unlimited scheduling', 'Advanced AI engine & hashtags', 'Priority calendar scheduling', 'Basic analytics tracking', '24/7 priority support'],
+      description: 'Ideal for professional brands and businesses.',
+      features: ['5 connected Instagram accounts', '100 scheduled posts per month', '200 AI caption generations/month', 'Priority calendar scheduling', 'Detailed analytics dashboard', '24/7 priority support'],
       cta: 'Upgrade to Pro',
       popular: true,
     },
     {
-      name: 'Enterprise / Agency',
-      price: '$99',
-      description: 'Designed for agencies managing multiple profiles.',
-      features: ['Unlimited connected accounts', 'Multi-user workspace access', 'Custom fine-tuned AI prompts', 'Advanced deep analytics reports', 'Dedicated account manager', 'API access'],
-      cta: 'Contact Sales',
+      name: 'Business',
+      price: '$79',
+      description: 'For power users and social scaling brands.',
+      features: ['10 connected Instagram accounts', '500 scheduled posts per month', '1000 AI caption generations/month', 'Priority calendar scheduling', 'Detailed analytics dashboard', '24/7 priority support'],
+      cta: 'Upgrade to Business',
+      popular: false,
+    },
+    {
+      name: 'Enterprise',
+      price: '$199',
+      description: 'For agencies managing large portfolios.',
+      features: ['Unlimited connected accounts', 'Unlimited scheduled posts', 'Unlimited AI caption generations', 'Priority calendar scheduling', 'Detailed analytics dashboard', 'Dedicated Account Manager'],
+      cta: 'Upgrade to Enterprise',
       popular: false,
     },
   ];
 
   return (
-    <main className="min-h-screen gradient-bg text-zinc-100 flex flex-col justify-between">
+    <main className="min-h-screen bg-black text-zinc-100 flex flex-col justify-between" style={{
+      background: 'linear-gradient(135deg, #0a0a0f 0%, #0d0b1e 50%, #0a0f1e 100%)',
+    }}>
       {/* Header */}
       <header className="max-w-7xl mx-auto w-full px-6 py-6 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
@@ -44,18 +62,18 @@ export default function PricingPage() {
       </header>
 
       {/* Main Container */}
-      <div className="max-w-6xl mx-auto px-6 py-12 flex flex-col gap-12 items-center flex-1">
+      <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col gap-12 items-center flex-1">
         <div className="text-center flex flex-col gap-4">
           <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white">Simple, transparent pricing</h1>
           <p className="text-zinc-400 text-lg">Pick the plan that works best for your social scaling goals.</p>
         </div>
 
         {/* Plan Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 w-full">
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`glass-panel rounded-2xl p-8 flex flex-col justify-between transition-all ${
+              className={`glass-panel rounded-2xl p-6 flex flex-col justify-between border border-zinc-800 bg-zinc-950/30 transition-all ${
                 plan.popular ? 'border-pink-500/50 shadow-lg shadow-pink-500/5' : ''
               }`}
             >
@@ -65,27 +83,27 @@ export default function PricingPage() {
                     Most Popular
                   </span>
                 )}
-                <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
-                <div className="flex items-baseline gap-1 mb-4">
-                  <span className="text-4xl font-extrabold text-white">{plan.price}</span>
-                  <span className="text-zinc-500 text-sm">/month</span>
+                <h3 className="text-lg font-bold text-white mb-2">{plan.name}</h3>
+                <div className="flex items-baseline gap-0.5 mb-4">
+                  <span className="text-3xl font-extrabold text-white">{plan.price}</span>
+                  <span className="text-zinc-500 text-xs">/month</span>
                 </div>
-                <p className="text-zinc-400 text-sm mb-6 leading-relaxed">{plan.description}</p>
-                <div className="h-px bg-zinc-800 my-6" />
-                <ul className="flex flex-col gap-3 text-sm text-zinc-300">
+                <p className="text-zinc-400 text-xs mb-4 leading-relaxed">{plan.description}</p>
+                <div className="h-px bg-zinc-800 my-4" />
+                <ul className="flex flex-col gap-2.5 text-xs text-zinc-300">
                   {plan.features.map((feat) => (
-                    <li key={feat} className="flex items-center gap-2.5">
+                    <li key={feat} className="flex items-start gap-2">
                       <span className="text-pink-500">✓</span>
-                      {feat}
+                      <span>{feat}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <div className="mt-8">
+              <div className="mt-6">
                 <Link
-                  href="/dashboard"
-                  className={`block w-full py-3 px-4 rounded-xl text-center font-semibold text-sm transition-all ${
+                  href="/subscription"
+                  className={`block w-full py-2.5 px-4 rounded-xl text-center font-semibold text-xs transition-all ${
                     plan.popular
                       ? 'bg-gradient-to-r from-pink-500 to-violet-600 hover:opacity-90 text-white shadow-md shadow-pink-500/10'
                       : 'bg-zinc-800 hover:bg-zinc-700 text-white'

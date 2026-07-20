@@ -6,7 +6,9 @@ import helmet from 'helmet';
 import * as path from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    rawBody: true,
+  });
 
   // Serve local upload files statically at /uploads
   const uploadsDir = path.join(process.cwd(), 'uploads');

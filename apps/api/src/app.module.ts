@@ -10,6 +10,12 @@ import { InstagramPublishModule } from './modules/instagram-publish/instagram-pu
 import { MediaUploadModule } from './modules/media-upload/media-upload.module';
 import { PostsModule } from './modules/posts/posts.module';
 import { AiContentModule } from './modules/ai-content/ai-content.module';
+import { BillingModule } from './modules/billing/billing.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { AdminModule } from './modules/admin/admin.module';
+import { HealthModule } from './modules/health/health.module';
+import { UsageLimitGuard } from './guards/usage-limit.guard';
 
 @Module({
   imports: [
@@ -25,6 +31,11 @@ import { AiContentModule } from './modules/ai-content/ai-content.module';
     MediaUploadModule,
     PostsModule,
     AiContentModule,
+    BillingModule,
+    AnalyticsModule,
+    NotificationsModule,
+    AdminModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [
@@ -32,6 +43,10 @@ import { AiContentModule } from './modules/ai-content/ai-content.module';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: UsageLimitGuard,
     },
   ],
 })

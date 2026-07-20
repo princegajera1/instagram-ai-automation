@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { UserButton } from '@clerk/nextjs';
+import { useUser, UserButton } from '@clerk/nextjs';
 import {
   LayoutDashboard,
   Calendar,
@@ -15,6 +15,7 @@ import {
   LifeBuoy,
   LogOut,
   Sparkles,
+  Shield,
 } from 'lucide-react';
 
 interface NavigationWrapperProps {
@@ -23,6 +24,10 @@ interface NavigationWrapperProps {
 
 export default function NavigationWrapper({ children }: NavigationWrapperProps) {
   const pathname = usePathname();
+  const { user } = useUser();
+
+  const role = user?.publicMetadata?.role || user?.unsafeMetadata?.role;
+  const isAdmin = role === 'ADMIN';
 
   const menuItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -31,6 +36,7 @@ export default function NavigationWrapper({ children }: NavigationWrapperProps) 
     { name: 'Calendar', href: '/calendar', icon: Calendar },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
     { name: 'Notifications', href: '/notifications', icon: Bell },
+    ...(isAdmin ? [{ name: 'Admin Panel', href: '/admin', icon: Shield }] : []),
     { name: 'Subscription', href: '/subscription', icon: Sparkles },
     { name: 'Billing', href: '/billing', icon: CreditCard },
     { name: 'Support', href: '/support', icon: LifeBuoy },
