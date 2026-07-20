@@ -1,6 +1,7 @@
 'use client';
 
 import { ClerkProvider } from '@clerk/nextjs';
+import { SmoothScrollProvider } from '@/components/SmoothScrollProvider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -15,7 +16,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
         },
       }}
     >
-      {children}
+      <SmoothScrollProvider>{children}</SmoothScrollProvider>
     </ClerkProvider>
   );
 }
+
