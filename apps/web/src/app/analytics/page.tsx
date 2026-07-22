@@ -99,6 +99,7 @@ export default function AnalyticsPage() {
       setInstagramAccountId(savedId);
       fetchAnalytics(savedId);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {

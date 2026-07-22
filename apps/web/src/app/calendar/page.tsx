@@ -260,6 +260,7 @@ export default function CalendarPage() {
                               post.mediaFiles[0].mimeType.startsWith('video') ? (
                                 <video src={post.mediaFiles[0].url} className={styles.thumbImg} />
                               ) : (
+                                // eslint-disable-next-line @next/next/no-img-element
                                 <img src={post.mediaFiles[0].url} alt="thumb" className={styles.thumbImg} />
                               )
                             ) : (

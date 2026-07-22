@@ -285,6 +285,7 @@ export default function CreatePostPage() {
                       {m.mimeType.startsWith('video') ? (
                         <video src={m.url} className={styles.thumbMedia} />
                       ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img src={m.url} alt="upload" className={styles.thumbMedia} />
                       )}
                       <button

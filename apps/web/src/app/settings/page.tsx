@@ -59,6 +59,7 @@ function SettingsContent() {
     if (isLoaded && isSignedIn) {
       fetchAccounts();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, isSignedIn]);
 
   useEffect(() => {
@@ -80,6 +81,7 @@ function SettingsContent() {
       });
       router.replace('/settings');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const handleConnect = async () => {
@@ -245,6 +247,7 @@ function SettingsContent() {
                     >
                       <div className="flex items-center gap-3">
                         {details?.profilePictureUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={details.profilePictureUrl}
                             alt={details.username}
